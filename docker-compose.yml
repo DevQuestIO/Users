@@ -1,0 +1,63 @@
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_DB=dev-file
+    ports:
+      - "8080:8080"
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+    command: start-dev
+    networks:
+      - app-network
+
+  crdb:
+    image: cockroachdb/cockroach:latest
+    container_name: crdb_devquest
+    ports:
+      - "26257:26257"
+      - "8081:8080"
+    command: start-single-node --insecure
+    volumes:
+      - crdb-data:/cockroach/cockroach-data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: .
+    container_name: backend
+    ports:
+      - "5000:5000"
+    environment:
+      - DB_USER=root
+      - DB_PASSWORD=yourdbpassword
+      - DB_HOST=crdb
+      - DB_PORT=26257
+      - KEYCLOAK_URL=http://keycloak:8080
+    depends_on:
+      crdb:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+    command: ["./wait-for-it.sh", "crdb:26257", "-t", "60", "--", "npm", "start"]
+    networks:
+      - app-network
+    restart: unless-stopped
+
+volumes:
+  keycloak_data:
+    name: keycloak_data
+  crdb-data:
+    name: crdb_data
+
+networks:
+  app-network:
+    driver: bridge
