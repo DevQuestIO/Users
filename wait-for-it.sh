@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# wait-for-it.sh
-
+cmdname=$(basename "$0")
 TIMEOUT=120
 QUIET=0
 
@@ -28,7 +27,8 @@ wait_for() {
 
     echoerr "Waiting for $wait_host:$wait_port..."
 
-    for i in $(seq $timeout); do
+    for i in $(seq 1 "$timeout"); do
+        echoerr "Checking: $wait_host:$wait_port - attempt $i"
         if nc -z "$wait_host" "$wait_port" > /dev/null 2>&1; then
             echoerr "$wait_host:$wait_port is available after $i seconds"
             return 0
@@ -44,16 +44,28 @@ if [ "$#" -lt 1 ]; then
     usage 1
 fi
 
+if [[ "$1" != *:* ]]; then
+    echoerr "Invalid host:port format"
+    usage 1
+fi
+
 HOST=$(echo "$1" | cut -d : -f 1)
 PORT=$(echo "$1" | cut -d : -f 2)
 shift
+
+# Debug output for host and port
+echoerr "Host: $HOST"
+echoerr "Port: $PORT"
 
 # Process additional arguments
 while [ $# -gt 0 ]; do
     case "$1" in
         -t)
             TIMEOUT="$2"
-            if [ "$TIMEOUT" = "" ]; then break; fi
+            if [ -z "$TIMEOUT" ]; then
+                echoerr "Timeout value is required after -t"
+                usage 1
+            fi
             shift 2
             ;;
         --timeout=*)
@@ -73,6 +85,9 @@ while [ $# -gt 0 ]; do
             ;;
     esac
 done
+
+# Debug output for timeout value
+echoerr "Timeout: $TIMEOUT"
 
 wait_for "$HOST" "$PORT" "$TIMEOUT" || exit 1
 

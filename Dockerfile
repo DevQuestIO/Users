@@ -26,18 +26,4 @@ COPY tsconfig.json ./
 EXPOSE 5000
 
 CMD ["./wait-for-it.sh", "crdb:26257", "-t", "60", "--", "npm", "start"]
-# Dockerfile for Users (Backend)
-FROM node:18
-
-WORKDIR /app
-
-# Install dependencies
-COPY package*.json ./
-RUN npm install
-
-# Copy source code
-COPY . .
-
-EXPOSE 5000
-
-CMD ["node", "src/server.js"]
+# CMD ["bash", "./wait-for-it.sh", "crdb:26257", "-t", "60", "--", "npm", "start"]
