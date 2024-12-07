@@ -34,6 +34,8 @@ const registerUser = async (req: Request, res: Response) => {
           username,
           email,
           password: hashedPassword,
+          name: username, // Assuming the username is used as the name for simplicity
+          emailVerified: false,
         },
       });
 
