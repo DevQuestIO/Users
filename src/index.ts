@@ -49,59 +49,6 @@ app.get('/api/auth/login-sso', (req, res) => {
   res.redirect(redirectUri);
 });
 
-// Handle Callback from Keycloak
-// app.get('/api/auth/callback', async (req, res) => {
-//   const { code } = req.query;
-
-//   if (!code || typeof code !== 'string') {
-//     return res.status(400).send('Authorization code is missing or invalid');
-//   }
-
-//   // Ensure the required environment variables are present
-//   const clientId = process.env.KEYCLOAK_CLIENT_ID;
-//   const clientSecret = process.env.KEYCLOAK_SECRET;
-
-//   if (!clientId || !clientSecret) {
-//     console.error('Missing CLIENT_ID or CLIENT_SECRET in environment variables');
-//     return res.status(500).send('Internal server error');
-//   }
-
-//   try {
-//     const tokenResponse = await fetch(`http://${process.env.KEYCLOAK_URL}/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/token`, {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/x-www-form-urlencoded',
-//       },
-//       body: new URLSearchParams({
-//         grant_type: 'authorization_code',
-//         client_id: clientId, // Ensure this is a string
-//         client_secret: clientSecret, // Ensure this is a string
-//         code, // Authorization code from query
-//         redirect_uri: 'http://localhost:5002/api/auth/callback', // Your redirect URI
-//       }).toString(), // Convert to a valid string format
-//     });
-
-//     const tokens = await tokenResponse.json();
-
-//     if (tokens.error) {
-//       throw new Error(tokens.error_description || 'Failed to fetch tokens');
-//     }
-
-//      // Set the token as a cookie
-//      res.cookie('auth_token', tokens.access_token, {
-//       httpOnly: true,
-//       secure: process.env.NODE_ENV === 'production',
-//       sameSite: 'lax',
-//     });    
-//     console.log('Cookie set with auth_token:', tokens.access_token);
-//     // Handle successful login, e.g., store tokens or create a session
-//     res.redirect('http://localhost:3000/dashboard');
-//   } catch (error) {
-//     console.error('Error during SSO callback:', error);
-//     res.status(500).send('SSO login failed');
-//   }
-// });
-
 app.get('/api/auth/callback', async (req, res) => {
   const { code } = req.query;
 
@@ -243,32 +190,6 @@ app.post('/api/auth/signout', async (req, res) => {
     res.status(500).json({ error: 'Internal server error during signout' });
   }
 });
-
-// app.post('/api/auth/signout', (req, res) => {
-//   try {
-//     const logoutUrl = `${process.env.KEYCLOAK_URL}/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/logout?redirect_uri=${process.env.FRONTEND_URL || 'http://localhost:3000'}`;
-
-//     // Clear cookies on the client
-//     res.clearCookie('auth_token', {
-//       httpOnly: true,
-//       secure: process.env.NODE_ENV === 'production',
-//       sameSite: 'lax',
-//     });
-
-//     res.clearCookie('connect.sid', {
-//       httpOnly: true,
-//       secure: process.env.NODE_ENV === 'production',
-//       sameSite: 'lax',
-//     });
-//     res.status(200).json({ message: 'Signed out successfully' });
-//     // Redirect user to Keycloak logout
-//     res.redirect(logoutUrl);
-//   } catch (error) {
-//     console.error('Error during signout:', error);
-//     res.status(500).json({ error: 'Internal server error during signout' });
-//   }
-// });
-
 
 // Start server
 const PORT = process.env.PORT || 5002;
