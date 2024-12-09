@@ -1,0 +1,11 @@
+{
+    "realm": "devquest",
+    "auth-server-url": "http://localhost:8080/auth",
+    "resource": "devquest-frontend",
+    "credentials": {
+      "secret": "Km7Pc72XLVWnxmJM89Wm52mthZSlhArA"
+    },
+    "use-resource-role-mappings": true,
+    "bearer-only": true
+  }
+  

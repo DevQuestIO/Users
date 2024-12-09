@@ -1,7 +1,8 @@
 services:
   keycloak:
-    image: quay.io/keycloak/keycloak:latest
+    image: quay.io/keycloak/keycloak:21.1.1
     container_name: keycloak
+    platform: linux/amd64  # Force x86 architecture
     environment:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
@@ -36,21 +37,23 @@ services:
     container_name: backend
     ports:
       - "5001:5000"
-    environment:  
+    environment:
       - DB_USER=root
       - DB_PASSWORD=yourdbpassword
       - DB_HOST=crdb
       - DB_PORT=26257
       - KEYCLOAK_URL=http://keycloak:8080
+      - NODE_OPTIONS=--no-warnings
     depends_on:
       crdb:
         condition: service_healthy
       keycloak:
         condition: service_started
-    command: ["./wait-for-it.sh", "crdb:26257", "-t", "60", "--", "npm", "start"]
+    command: ["npm", "start"]
     networks:
       - app-network
     restart: unless-stopped
+
 
 volumes:
   keycloak_data:
